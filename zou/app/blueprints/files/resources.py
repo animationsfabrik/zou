@@ -1,3 +1,4 @@
+import os
 import datetime
 
 from flask import request, abort
@@ -14,7 +15,8 @@ from zou.app.services import (
     assets_service,
     tasks_service,
     entities_service,
-    user_service
+    user_service,
+    shots_service
 )
 
 from zou.app.services.exception import (
@@ -25,6 +27,70 @@ from zou.app.services.exception import (
     MalformedFileTreeException,
     EntryAlreadyExistsException
 )
+
+
+class GenerateFolderStructure(Resource):
+    """
+    Generate from file tree template a project folder structure
+    """
+
+    @jwt_required
+    def post(self, project_id):
+        project_id = self.get_arguments()
+
+        project = projects_service.get_project(project_id)
+
+        shots = shots_service.get_shots_and_tasks({"project_id": project_id})
+
+        assets = assets_service.get_assets_and_tasks({"project_id": project_id})
+
+        paths = []
+
+        for shot in shots:
+            tasks = shot['tasks']
+            for task in tasks:
+                path = file_tree_service.get_working_folder_path(task)
+                paths.append(path)
+
+                path = file_tree_service.get_working_folder_path(task, mode="components_output")
+                paths.append(path)
+
+                path = file_tree_service.get_working_folder_path(task, mode="output_output")
+                paths.append(path)
+
+                path = file_tree_service.get_working_folder_path(task, mode="slated_output")
+                paths.append(path)
+
+        for asset in assets:
+            tasks = asset['tasks']
+            for task in tasks:
+                path = file_tree_service.get_working_folder_path(task)
+                paths.append(path)
+
+                path = file_tree_service.get_working_folder_path(task, mode="components_output")
+                paths.append(path)
+
+                path = file_tree_service.get_working_folder_path(task, mode="output_output")
+                paths.append(path)
+
+                path = file_tree_service.get_working_folder_path(task, mode="slated_output")
+                paths.append(path)
+
+        try:
+            for path in paths:
+                if not os.path.exists(os.path.dirname(path)):
+                    os.makedirs(os.path.dirname(path))
+        except Exception as e:
+            pass
+
+        return paths, 200
+
+    def get_arguments(self):
+       parser = reqparse.RequestParser()
+       parser.add_argument("project_id", default="main")
+       args = parser.parse_args()
+
+       return args["project_id"]
 
 
 class WorkingFilePathResource(Resource):

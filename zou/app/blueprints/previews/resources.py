@@ -1,4 +1,5 @@
 import os
+import logging
 
 from flask import abort, request, current_app
 from flask import send_file as flask_send_file
@@ -25,6 +26,7 @@ from zou.app.utils import (
     thumbnail as thumbnail_utils
 )
 
+gunicorn_logger = logging.getLogger('gunicorn.error')
 
 ALLOWED_PICTURE_EXTENSION = [".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG"]
 ALLOWED_MOVIE_EXTENSION = [

@@ -1,3 +1,6 @@
+import os
+import re
+import logging
 import datetime
 
 from flask import abort, request
@@ -24,7 +27,56 @@ from zou.app.services import (
     notifications_service
 )
 from zou.app.utils import query, permissions
+gunicorn_logger = logging.getLogger('gunicorn.error')
 
+class NewVersionResource(Resource):
+    @jwt_required
+    def post(self, task_id):
+        person_id = self.get_arguments()
+        gunicorn_logger.log(logging.ERROR, task_id)
+        gunicorn_logger.log(logging.ERROR, person_id)
+        task = tasks_service.get_task(task_id)
+
+        working_file_name = re.sub(r'_v\d\d\d.\w\w\w', '', file_tree_service.get_working_file_name(task))
+        gunicorn_logger.log(logging.ERROR, working_file_name)
+        next_revision = files_service.get_next_working_revision(task_id, working_file_name)
+        working_file_path = file_tree_service.get_working_file_path(task, mode="working", revision=next_revision)
+        working_file = files_service.create_new_working_revision(task_id, person_id, "edfd3a91-4d55-47a4-ae15-f2123c07edf6", working_file_name, working_file_path)
+        comment = tasks_service.create_comment(task_id, '4f4256d0-72d9-4de5-bf71-a08209b56750', person_id, "Version %s created" % next_revision)
+        preview_file = tasks_service.add_preview_file_to_comment(comment['id'], person_id, task_id, revision=next_revision)
+        entities_service.update_entity_preview(task['entity_id'], preview_file['id'])
+
+        output_preview_file_path = file_tree_service.get_working_file_path(task, mode="preview_output", revision=next_revision)
+        output_slated_file_path = file_tree_service.get_working_file_path(task, mode="slated_output", revision=next_revision, frame="0001")
+
+        movies_preview_file_path = '/opt/zou/previews/movies/previews/' + preview_file['id'][:3] + '/' + preview_file['id'][3:6] + '/'
+        pictures_original_file_path = '/opt/zou/previews/pictures/originals/' + preview_file['id'][:3] + '/' + preview_file['id'][3:6] + '/'
+        pictures_preview_file_path = '/opt/zou/previews/pictures/previews/' + preview_file['id'][:3] + '/' + preview_file['id'][3:6] + '/'
+        pictures_thumbnail_file_path = '/opt/zou/previews/pictures/thumbnails/' + preview_file['id'][:3] + '/' + preview_file['id'][3:6] + '/'
+
+        if not os.path.exists(movies_preview_file_path): os.makedirs(movies_preview_file_path)
+        if not os.path.exists(pictures_original_file_path): os.makedirs(pictures_original_file_path)
+        if not os.path.exists(pictures_preview_file_path): os.makedirs(pictures_preview_file_path)
+        if not os.path.exists(pictures_thumbnail_file_path): os.makedirs(pictures_thumbnail_file_path)
+
+        if not os.path.exists(os.path.dirname(working_file_path)):
+          os.makedirs(os.path.dirname(working_file_path))
+        file = open(working_file_path, "w")
+        file.close()
+
+        os.symlink(output_preview_file_path, movies_preview_file_path + preview_file['id'])
+        os.symlink(output_slated_file_path, pictures_original_file_path + preview_file['id'])
+        os.symlink(output_slated_file_path, pictures_preview_file_path + preview_file['id'])
+        os.symlink(output_slated_file_path, pictures_thumbnail_file_path + preview_file['id'])
+
+        return working_file, 200
+
+    def get_arguments(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument("user_id", default="")
+        args = parser.parse_args()
+
+        return args["user_id"]
 
 class CommentTaskResource(Resource):
     """

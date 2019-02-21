@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import logging
 
 from slugify import slugify
 
@@ -29,6 +30,7 @@ from zou.app.services.exception import (
 
 ALLOWED_FIELDS = ["short_name", "name", "number"]
 
+gunicorn_logger = logging.getLogger('gunicorn.error')
 
 def get_working_file_path(
     task,
@@ -37,7 +39,8 @@ def get_working_file_path(
     output_type=None,
     name="",
     revision=1,
-    sep=os.sep
+    sep=os.sep,
+    frame=""
 ):
     """
     Return working file path based on given paramaters. The task is mandatory
@@ -51,7 +54,8 @@ def get_working_file_path(
         software=software,
         output_type=output_type,
         name=name,
-        revision=revision
+        revision=revision,
+        frame=frame
     )
     folder = get_working_folder_path(
         task,
@@ -103,7 +107,8 @@ def get_working_file_name(
     software=None,
     output_type=None,
     name="",
-    revision=1
+    revision=1,
+    frame=""
 ):
     entity = entities_service.get_entity(task["entity_id"])
     project = get_project(entity)
@@ -116,7 +121,8 @@ def get_working_file_name(
         task=task,
         software=software,
         name=name,
-        revision=revision
+        revision=revision,
+        frame=frame
     )
 
     return u"%s" % file_name
@@ -191,7 +197,8 @@ def get_working_folder_path(
     output_type=None,
     name="",
     revision=1,
-    sep=os.sep
+    sep=os.sep,
+    frame=""
 ):
     entity = entities_service.get_entity(task["entity_id"])
     project = get_project(entity)
@@ -207,7 +214,8 @@ def get_working_folder_path(
         software=software,
         name=name,
         revision=revision,
-        style=style
+        style=style,
+        frame=frame
     )
     folder_path = change_folder_path_separators(folder_path, sep)
 
@@ -357,7 +365,8 @@ def get_file_name_root(
     name="main",
     asset_instance=None,
     asset=None,
-    revision=1
+    revision=1,
+    frame=""
 ):
     if asset_instance is None:
         file_name_template = get_file_name_template(tree, mode, entity)
@@ -374,9 +383,10 @@ def get_file_name_root(
         name=name,
         asset_instance=asset_instance,
         asset=asset,
-        revision=revision
+        revision=revision,
+        frame=frame
     )
-    file_name = slugify(file_name, separator="_")
+    #file_name = slugify(file_name, separator="_")
     file_name = apply_style(file_name, tree[mode]["file_name"].get("style", ""))
     return file_name
 
@@ -418,7 +428,8 @@ def update_variable(
     name="",
     representation="",
     revision=1,
-    style="lowercase"
+    style="lowercase",
+    frame=""
 ):
     variables = re.findall('<([\w\.]*)>', template)
 
@@ -446,7 +457,8 @@ def update_variable(
             asset=asset,
             representation=representation,
             revision=revision,
-            field=field
+            field=field,
+            frame=frame
         )
 
         if data is not None:
@@ -469,7 +481,8 @@ def get_folder_from_datatype(
     asset=None,
     representation="",
     revision=1,
-    field="name"
+    field="name",
+    frame=""
 ):
     if datatype == "Project":
         folder = get_folder_from_project(entity)
@@ -501,6 +514,8 @@ def get_folder_from_datatype(
             folder = get_folder_from_asset(asset)
     elif datatype == "Software":
         folder = get_folder_from_software(software, field)
+    elif datatype == "Extension":
+        folder = get_folder_from_software(software, "file_extension")
     elif datatype == "OutputType":
         folder = get_folder_from_output_type(output_type, field)
     elif datatype == "Scene":
@@ -513,6 +528,8 @@ def get_folder_from_datatype(
         folder = name
     elif datatype == "Version" or datatype == "Revision":
         folder = get_folder_from_revision(revision)
+    elif datatype == "Frame":
+        folder = frame
     else:
         raise MalformedFileTreeException("Unknown data type: %s." % datatype)
 

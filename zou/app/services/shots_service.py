@@ -1,3 +1,7 @@
+import sys
+import logging
+import datetime
+
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
 from sqlalchemy.exc import IntegrityError, StatementError
@@ -14,7 +18,8 @@ from zou.app.models.task_status import TaskStatus
 from zou.app.services import (
     deletion_service,
     entities_service,
-    projects_service
+    projects_service,
+    file_tree_service
 )
 from zou.app.services.exception import (
     EpisodeNotFoundException,
@@ -24,6 +29,7 @@ from zou.app.services.exception import (
     WrongIdFormatException
 )
 
+gunicorn_logger = logging.getLogger('gunicorn.error')
 
 @cache.memoize_function(120)
 def get_episode_type():
@@ -174,6 +180,7 @@ def get_shots_and_tasks(criterions={}):
             Task.task_type_id,
             Task.task_status_id,
             Task.priority,
+            Task.due_date,
             Task.estimation,
             Task.duration,
             Task.retake_count,
@@ -200,6 +207,7 @@ def get_shots_and_tasks(criterions={}):
         task_type_id,
         task_status_id,
         task_priority,
+        task_due_date,
         task_estimation,
         task_duration,
         task_retake_count,
@@ -239,6 +247,7 @@ def get_shots_and_tasks(criterions={}):
                     "task_status_id": str(task_status_id),
                     "task_type_id": str(task_type_id),
                     "priority": task_priority or 0,
+                    "due_date": task_due_date,
                     "estimation": task_estimation,
                     "duration": task_duration,
                     "retake_count": task_retake_count,
@@ -314,6 +323,7 @@ def get_full_shot(shot_id):
             "id": str(task.id),
             "task_status_id": str(task.task_status_id),
             "task_type_id": str(task.task_type_id),
+            "due_date": str(task.due_date),
             "assignees": [str(assignee.id) for assignee in task.assignees]
         })
     shot["tasks"] = task_dicts

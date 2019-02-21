@@ -27,7 +27,8 @@ from .resources import (
 
     GetTimeSpentResource,
     SetTimeSpentResource,
-    AddTimeSpentResource
+    AddTimeSpentResource,
+    NewVersionResource
 )
 
 
@@ -81,6 +82,10 @@ routes = [
     (
         "/actions/task-types/<task_type_id>/assets/create-tasks",
         CreateAssetTasksResource
+    ),
+    (
+        "/actions/tasks/<task_id>/new-version",
+        NewVersionResource
     )
 ]
 

@@ -1,3 +1,5 @@
+import logging
+
 from zou.app.models.file_status import FileStatus
 from zou.app import app
 
@@ -28,6 +30,7 @@ from zou.app.utils import fields, events
 from sqlalchemy import desc
 from sqlalchemy.exc import StatementError, IntegrityError
 
+gunicorn_logger = logging.getLogger('gunicorn.error')
 
 def get_default_status():
     """
