@@ -29,6 +29,7 @@ from zou.app.services import (
 from zou.app.utils import query, permissions
 gunicorn_logger = logging.getLogger('gunicorn.error')
 
+
 class NewVersionResource(Resource):
     @jwt_required
     def post(self, task_id):

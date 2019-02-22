@@ -1,4 +1,5 @@
 import os
+import logging
 import datetime
 
 from flask import request, abort
@@ -28,6 +29,14 @@ from zou.app.services.exception import (
     EntryAlreadyExistsException
 )
 
+gunicorn_logger = logging.getLogger('gunicorn.error')
+
+class CheckoutWorkingFile(Resource):
+    @jwt_required
+    def post(self, working_file_id):
+       gunicorn_logger.log(logging.ERROR, working_file_id)
+
+       return working_file_id, 200
 
 class GenerateFolderStructure(Resource):
     """

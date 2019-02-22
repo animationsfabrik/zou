@@ -100,7 +100,8 @@ routes = [
     ("/actions/projects/<project_id>/set-file-tree", SetTreeResource),
     ("/actions/projects/<project_id>/generate-folder-structure", GenerateFolderStructure),
     ("/actions/working-files/<working_file_id>/comment", CommentWorkingFileResource),
-    ("/actions/working-files/<working_file_id>/modified", ModifiedFileResource)
+    ("/actions/working-files/<working_file_id>/modified", ModifiedFileResource),
+    ("/actions/working-files/<working_file_id>/checkout", CheckoutWorkingFile)
 ]
 
 blueprint = Blueprint("files", "files")
