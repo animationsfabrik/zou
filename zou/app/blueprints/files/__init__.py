@@ -2,7 +2,7 @@ from flask import Blueprint
 from zou.app.utils.api import configure_api_from_blueprint
 
 from .resources import (
-    CheckoutWorkingFile
+    CheckoutWorkingFile,
     GenerateFolderStructure,
     WorkingFilePathResource,
     LastWorkingFilesResource,
