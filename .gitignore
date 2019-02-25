@@ -95,3 +95,5 @@ Vagrantfile
 previews
 thumbnails
 release.sh
+
+.idea
