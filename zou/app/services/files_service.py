@@ -1,5 +1,3 @@
-import logging
-
 from zou.app.models.file_status import FileStatus
 from zou.app import app
 
@@ -633,7 +631,7 @@ def get_output_files_for_output_type_and_asset_instance(
 def remove_preview_file(preview_file_id):
     preview_file = get_preview_file_raw(preview_file_id)
     preview_file.delete()
-    events.emit("preview_file:deletion", {
+    events.emit("preview_file:delete", {
         "preview_file_id": preview_file_id
     })
     return preview_file.serialize()

@@ -210,7 +210,7 @@ class AddExtraPreviewResource(Resource):
         preview_file = deletion_service.remove_preview_file_by_id(
             preview_file_id
         )
-        return preview_file, 204
+        return '', 204
 
 
 class TaskPreviewsResource(Resource):
@@ -247,7 +247,7 @@ class TaskCommentResource(Resource):
         task = tasks_service.get_task(task_id)
         user_service.check_project_access(task["project_id"])
         deletion_service.remove_comment(comment_id)
-        return None, 204
+        return '', 204
 
 
 class PersonTasksResource(Resource):
@@ -696,6 +696,6 @@ class DeleteAllTasksForTaskTypeResource(Resource):
                 project_id,
                 task_type_id
             )
-            return None, 204
+            return '', 204
         else:
             return 403
