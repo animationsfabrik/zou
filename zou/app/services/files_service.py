@@ -1,3 +1,5 @@
+import logging
+
 from zou.app.models.file_status import FileStatus
 from zou.app import app
 
