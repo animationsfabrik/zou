@@ -1,4 +1,7 @@
+import json
 import datetime
+import logging
+import requests
 
 from flask import abort
 from flask_restful import Resource, reqparse
@@ -11,6 +14,34 @@ from zou.app.services import (
 from zou.app.utils import auth, permissions, csv_utils
 from zou.app.services.exception import WrongDateFormatException
 
+gunicorn_logger = logging.getLogger('gunicorn.error')
+
+class UpdateSevDeskPersons(Resource):
+    @jwt_required
+    def post(self):
+        data = self.get_arguments()
+        url = 'https://my.sevdesk.de/api/v1/Contact?depth=1&token=%s' % data['token']
+        request = requests.get(url)
+        if request.status_code != 200:
+            abort(404)
+        response = request.json()
+        for person in response['objects']:
+            person_sevdesk_id = person['id']
+            person_exists = persons_service.get_person_by_sevdesk_id(person_sevdesk_id)
+            if not person_exists:
+                new_person = persons_service.create_person(email=person['surename'].lower() + "." + person['familyname'].lower() + "@animationsfabrik.de", password=auth.encrypt_password("changeme"), first_name=person['surename'], last_name=person['familyname'], sevdesk_id=person_sevdesk_id)
+
+        return new_person, 201
+
+    def get_arguments(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument(
+            "token",
+            help="The token is required",
+            required=True
+        )
+        args = parser.parse_args()
+        return args
 
 class NewPersonResource(Resource):
     """
@@ -28,6 +59,8 @@ class NewPersonResource(Resource):
             data["first_name"],
             data["last_name"],
             data["phone"],
+            data["mobile"],
+            data["company"],
             role=data["role"],
             desktop_login=data["desktop_login"]
         )
@@ -51,6 +84,8 @@ class NewPersonResource(Resource):
             required=True
         )
         parser.add_argument("phone", default="")
+        parser.add_argument("mobile", default="")
+        parser.add_argument("company", default="")
         parser.add_argument("role", default="user")
         parser.add_argument("desktop_login", default="")
         args = parser.parse_args()

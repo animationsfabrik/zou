@@ -11,7 +11,8 @@ from .resources import (
     TimeSpentsResource,
     TimeSpentMonthResource,
     TimeSpentWeekResource,
-    TimeSpentYearResource
+    TimeSpentYearResource,
+    UpdateSevDeskPersons
 )
 
 routes = [
@@ -26,7 +27,8 @@ routes = [
     ("/data/persons/<person_id>/time-spents/day/<year>/<month>/<day>", PersonDayTimeSpentsResource),
     ("/data/persons/time-spents/month-table/<year>", TimeSpentYearResource),
     ("/data/persons/time-spents/week-table/<year>", TimeSpentWeekResource),
-    ("/data/persons/time-spents/day-table/<year>/<month>", TimeSpentMonthResource)
+    ("/data/persons/time-spents/day-table/<year>/<month>", TimeSpentMonthResource),
+    ("/data/persons/update-sevdesk", UpdateSevDeskPersons)
 ]
 
 blueprint = Blueprint("persons", "persons")

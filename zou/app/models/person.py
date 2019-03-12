@@ -34,6 +34,10 @@ class Person(db.Model, BaseMixin, SerializerMixin):
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(EmailType, unique=True)
     phone = db.Column(db.String(30))
+    mobile = db.Column(db.String(30))
+    company = db.Column(db.String(80))
+
+    sevdesk_id = db.Column(db.Integer, unique=True)
 
     active = db.Column(db.Boolean(), default=True)
     last_presence = db.Column(db.Date())
@@ -45,7 +49,7 @@ class Person(db.Model, BaseMixin, SerializerMixin):
         TimezoneType(backend="pytz"),
         default=pytz_timezone("Europe/Paris")
     )
-    locale = db.Column(LocaleType, default=Locale("en", "US"))
+    locale = db.Column(LocaleType, default=Locale("de", "de"))
     data = db.Column(JSONB)
     role = db.Column(db.String(30), default="user")
     has_avatar = db.Column(db.Boolean(), default=False)

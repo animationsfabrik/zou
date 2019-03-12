@@ -1,5 +1,6 @@
 import slugify
 import datetime
+import logging
 
 from calendar import monthrange
 from dateutil import relativedelta
@@ -17,12 +18,14 @@ from zou.app.services.exception import (
     PersonNotFoundException
 )
 
+gunicorn_logger = logging.getLogger('gunicorn.error')
 
 def clear_person_cache():
     cache.cache.delete_memoized(get_person)
     cache.cache.delete_memoized(get_person_by_email)
     cache.cache.delete_memoized(get_person_by_email_username)
     cache.cache.delete_memoized(get_person_by_desktop_login)
+    cache.cache.delete_memoized(get_person_by_sevdesk_id)
 
 
 def get_persons():
@@ -123,6 +126,17 @@ def get_person_by_desktop_login(desktop_login):
     return person.serialize()
 
 
+@cache.memoize_function(120)
+def get_person_by_sevdesk_id(sevdesk_id):
+    try:
+        person = Person.get_by(sevdesk_id=sevdesk_id)
+    except StatementError:
+        return False
+    if person is None:
+        return False
+    else:
+        return True
+
 def get_current_user():
     """
     Return person from its auth token (the one that does the request) as a
@@ -145,8 +159,11 @@ def create_person(
     first_name,
     last_name,
     phone="",
+    mobile="",
+    company="",
     role="user",
-    desktop_login=""
+    desktop_login="",
+    sevdesk_id=None
 ):
     """
     Create a new person entry in the database. No operation are performed on
@@ -160,8 +177,11 @@ def create_person(
         first_name=first_name,
         last_name=last_name,
         phone=phone,
+        mobile=mobile,
+        company=company,
         role=role,
-        desktop_login=desktop_login
+        desktop_login=desktop_login,
+        sevdesk_id=sevdesk_id
     )
     events.emit("person:new", {
         "person_id": person.id
