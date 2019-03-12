@@ -31,7 +31,7 @@ class UpdateSevDeskPersons(Resource):
             if not person_exists:
                 new_person = persons_service.create_person(email=person['surename'].lower() + "." + person['familyname'].lower() + "@animationsfabrik.de", password=auth.encrypt_password("changeme"), first_name=person['surename'], last_name=person['familyname'], sevdesk_id=person_sevdesk_id)
 
-        return new_person, 201
+        return True, 201
 
     def get_arguments(self):
         parser = reqparse.RequestParser()
