@@ -36,6 +36,7 @@ class Person(db.Model, BaseMixin, SerializerMixin):
     phone = db.Column(db.String(30))
     mobile = db.Column(db.String(30))
     company = db.Column(db.String(80))
+    address = db.Column(db.String(80))
 
     sevdesk_id = db.Column(db.Integer, unique=True)
 

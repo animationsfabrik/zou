@@ -135,7 +135,7 @@ def get_person_by_sevdesk_id(sevdesk_id):
     if person is None:
         return False
     else:
-        return True
+        return person.serialize()
 
 def get_current_user():
     """
@@ -161,6 +161,7 @@ def create_person(
     phone="",
     mobile="",
     company="",
+    address="",
     role="user",
     desktop_login="",
     sevdesk_id=None
@@ -179,6 +180,7 @@ def create_person(
         phone=phone,
         mobile=mobile,
         company=company,
+        address=address,
         role=role,
         desktop_login=desktop_login,
         sevdesk_id=sevdesk_id
