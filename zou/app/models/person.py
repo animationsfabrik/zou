@@ -34,11 +34,6 @@ class Person(db.Model, BaseMixin, SerializerMixin):
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(EmailType, unique=True)
     phone = db.Column(db.String(30))
-    mobile = db.Column(db.String(30))
-    company = db.Column(db.String(80))
-    address = db.Column(db.String(80))
-
-    sevdesk_id = db.Column(db.Integer, unique=True)
 
     active = db.Column(db.Boolean(), default=True)
     last_presence = db.Column(db.Date())

@@ -16,58 +16,6 @@ from zou.app.services.exception import WrongDateFormatException
 
 gunicorn_logger = logging.getLogger('gunicorn.error')
 
-class UpdateSevDeskPersons(Resource):
-    @jwt_required
-    def post(self):
-        data = self.get_arguments()
-        url = 'https://my.sevdesk.de/api/v1/Contact?embed=parent%2CcommunicationWays%2Caddresses%2Caddresses.country&depth=1&token=' + data['token']
-        request = requests.get(url)
-        if request.status_code != 200:
-            abort(404)
-        response = request.json()
-
-        for person in response['objects']:
-            if person['surename'] != None:
-                person_sevdesk_id = person['id']
-                person_address = ""
-                person_company = ""
-                person_mail = ""
-                person_phone = ""
-
-                address_dic = person['addresses'][0]
-                person_address = "%s %s %s" % (address_dic['street'], address_dic['zip'], address_dic['city'])
-
-                communication_arr = person['communicationWays']
-                for comm in communication_arr:
-                    if comm['type'] == 'PHONE':
-                        person_phone = comm['value']
-                    elif comm['type'] == 'EMAIL':
-                        person_mail = comm['value']
-
-                if 'parent' in person:
-                    person_company = person['parent']['name']
-
-                person_exists = persons_service.get_person_by_sevdesk_id(person_sevdesk_id)
-
-                if not person_exists:
-                    new_person = persons_service.create_person(email=person_mail, password=auth.encrypt_password("changeme"), first_name=person['surename'], last_name=person['familyname'], sevdesk_id=person_sevdesk_id)
-                    persons_service.update_person(new_person['id'], {'phone': person_phone, 'address': person_address, 'company': person_company})
-
-                else:
-                    persons_service.update_person(person_exists['id'], {'phone': person_phone, 'address': person_address, 'company': person_company})
-
-        return True, 201
-
-    def get_arguments(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument(
-            "token",
-            help="The token is required",
-            required=True
-        )
-        args = parser.parse_args()
-        return args
-
 class NewPersonResource(Resource):
     """
     Create a new user in the database. Set "default" as password.
@@ -84,9 +32,6 @@ class NewPersonResource(Resource):
             data["first_name"],
             data["last_name"],
             data["phone"],
-            data["mobile"],
-            data["company"],
-            data["address"],
             role=data["role"],
             desktop_login=data["desktop_login"]
         )
@@ -110,9 +55,6 @@ class NewPersonResource(Resource):
             required=True
         )
         parser.add_argument("phone", default="")
-        parser.add_argument("mobile", default="")
-        parser.add_argument("company", default="")
-        parser.add_argument("address", default="")
         parser.add_argument("role", default="user")
         parser.add_argument("desktop_login", default="")
         args = parser.parse_args()

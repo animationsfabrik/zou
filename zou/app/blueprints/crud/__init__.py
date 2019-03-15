@@ -40,7 +40,7 @@ from .playlist import PlaylistsResource, PlaylistResource
 from .event import EventsResource, EventResource
 from .notifications import NotificationsResource, NotificationResource
 from .search_filters import SearchFiltersResource, SearchFilterResource
-
+from .contact import ContactResource, ContactsResource
 
 routes = [
     ("/data/persons", PersonsResource),
@@ -88,7 +88,9 @@ routes = [
     ("/data/notifications/", NotificationsResource),
     ("/data/notifications/<instance_id>", NotificationResource),
     ("/data/search-filters/", SearchFilterResource),
-    ("/data/search-filters/<instance_id>", SearchFiltersResource)
+    ("/data/search-filters/<instance_id>", SearchFiltersResource),
+    ("/data/contacts", ContactsResource),
+    ("/data/contacts/<instance_id>", ContactResource)
 ]
 
 blueprint = Blueprint("/data", "data")

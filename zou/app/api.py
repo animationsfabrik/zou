@@ -20,7 +20,7 @@ from .blueprints.previews import blueprint as previews_blueprint
 from .blueprints.shots import blueprint as shots_blueprint
 from .blueprints.tasks import blueprint as tasks_blueprint
 from .blueprints.user import blueprint as user_blueprint
-
+from .blueprints.contacts import blueprint as contacts_blueprint
 
 def configure(app):
     """
@@ -54,6 +54,7 @@ def configure_api_routes(app):
     app.register_blueprint(tasks_blueprint)
     app.register_blueprint(previews_blueprint)
     app.register_blueprint(user_blueprint)
+    app.register_blueprint(contacts_blueprint)
     return app
 
 
