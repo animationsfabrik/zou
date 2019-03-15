@@ -21,6 +21,7 @@ class UpdateSevDeskContacts(Resource):
         data = self.get_arguments()
         url = 'https://my.sevdesk.de/api/v1/Contact?limit=1000&embed=parent%2CcommunicationWays%2Caddresses%2Caddresses.country%2Ccategory&depth=1&token=' + data['token']
         request = requests.get(url)
+        request.encoding = 'utf-8'
         if request.status_code != 200:
             abort(404)
         response = request.json()
