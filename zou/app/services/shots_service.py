@@ -228,7 +228,6 @@ def get_shots_and_tasks(criterions={}):
                 "nb_frames": shot.nb_frames,
                 "frame_in": shot.data.get("frame_in", None),
                 "frame_out": shot.data.get("frame_out", None),
-                "fps": shot.data.get("fps", None),
                 "preview_file_id": str(shot.preview_file_id or ""),
                 "episode_id": str(episode_id),
                 "episode_name": episode_name,
