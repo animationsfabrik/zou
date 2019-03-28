@@ -3,7 +3,7 @@ from sqlalchemy.exc import StatementError
 from zou.app.models.comment import Comment
 from zou.app.models.project import Project
 from zou.app.models.entity import Entity
-from zou.app.models.notifications import Notification
+from zou.app.models.notification import Notification
 from zou.app.models.subscription import Subscription
 from zou.app.models.task_type import TaskType
 
@@ -159,14 +159,17 @@ def reset_notifications_for_mentions(comment):
     return notifications
 
 
-def create_assignation_notification(task_id, person_id):
+def create_assignation_notification(task_id, person_id, author_id=None):
     """
     Create a notification following a task assignation.
     """
     task = tasks_service.get_task_raw(task_id)
+    if author_id is None:
+        author_id = task.assigner_id
+
     notification = create_notification(
         person_id,
-        author_id=task.assigner_id,
+        author_id=author_id,
         task_id=task_id,
         type="assignation"
     )
