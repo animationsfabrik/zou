@@ -65,6 +65,7 @@ from .shotgun.team import (
 from .csv.persons import PersonsCsvImportResource
 from .csv.assets import AssetsCsvImportResource
 from .csv.shots import ShotsCsvImportResource
+from .xml.shots import ShotsXmlImportResource
 
 routes = [
     ("/import/shotgun/persons", ImportShotgunPersonsResource),
@@ -100,7 +101,8 @@ routes = [
 
     ("/import/csv/persons", PersonsCsvImportResource),
     ("/import/csv/projects/<project_id>/assets", AssetsCsvImportResource),
-    ("/import/csv/projects/<project_id>/shots", ShotsCsvImportResource)
+    ("/import/csv/projects/<project_id>/shots", ShotsCsvImportResource),
+    ("/import/xml/projects/<project_id>/shots", ShotsXmlImportResource)
 ]
 
 blueprint = Blueprint("/import", "import")
