@@ -46,17 +46,19 @@ class ShotsXmlImportResource(Resource):
         self.prepare_import()
         xml_file = ET.parse(file_path)
         root = xml_file.getroot()
-        sequence = xml_file.find('sequence').find('name').text
         episode = shots_service.get_or_create_first_episode(project_id)
-        self.sequences[sequence] = shots_service.get_or_create_sequence(project_id, episode['id'], sequence)
-
-        sequence_id = self.get_id_from_cache(self.sequences, sequence)
         shot_type = shots_service.get_shot_type()
+
         clips = root.iter('clipitem')
         for clip in clips:
+           sequence_name = clip.find('name').text.split('_')[0]
+           shot_name = clip.find('name').text.split('_')[1]
+           self.sequences[sequence_name] = shots_service.get_or_create_sequence(project_id, episode['id'], sequence_name)
+
+           sequence_id = self.get_id_from_cache(self.sequences, sequence_name)
            try:
                entity = Entity.create(
-                   name=clip.find('name').text,
+                   name=shot_name,
                    project_id=project_id,
                    parent_id=sequence_id,
                    entity_type_id=shot_type["id"],
@@ -64,7 +66,7 @@ class ShotsXmlImportResource(Resource):
                )
            except IntegrityError:
                 entity = Entity.get_by(
-                    name=clip.find('name').text,
+                    name=shot_name,
                     project_id=project_id,
                     parent_id=sequence_id,
                     entity_type_id=shot_type["id"]
