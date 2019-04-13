@@ -2,7 +2,7 @@ import os
 import uuid
 import logging
 
-import xml.etree.ElementTree as ET
+from lxml import etree
 
 from flask import request
 from flask_restful import Resource
@@ -44,7 +44,7 @@ class ShotsXmlImportResource(Resource):
         result = []
         self.check_permissions()
         self.prepare_import()
-        xml_file = ET.parse(file_path)
+        xml_file = etree.parse(file_path)
         root = xml_file.getroot()
         episode = shots_service.get_or_create_first_episode(project_id)
         shot_type = shots_service.get_shot_type()
@@ -53,6 +53,18 @@ class ShotsXmlImportResource(Resource):
         for clip in clips:
            sequence_name = clip.find('name').text.split('_')[0]
            shot_name = clip.find('name').text.split('_')[1]
+           start = clip.find('start').text
+           end = clip.find('end').text
+
+           if start == '-1':
+               if clip.getprevious().tag == 'transitionitem':
+                   start = clip.getprevious().find('start').text
+
+           if end == '-1':
+               if clip.getnext().tag == 'transitionitem':
+                   end = clip.getnext().find('end').text
+
+           duration = int(end) - int(start)
            self.sequences[sequence_name] = shots_service.get_or_create_sequence(project_id, episode['id'], sequence_name)
 
            sequence_id = self.get_id_from_cache(self.sequences, sequence_name)
@@ -62,7 +74,7 @@ class ShotsXmlImportResource(Resource):
                    project_id=project_id,
                    parent_id=sequence_id,
                    entity_type_id=shot_type["id"],
-                   nb_frames=clip.find('duration').text
+                   nb_frames=str(duration)
                )
            except IntegrityError:
                 entity = Entity.get_by(
